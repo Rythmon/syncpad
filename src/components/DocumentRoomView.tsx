@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCollaboration } from '@/hooks/useCollaboration';
 import { Navbar } from '@/components/Navigation/Navbar';
@@ -11,6 +11,7 @@ import { SplitViewSimulator } from '@/components/Simulation/SplitViewSimulator';
 import { ProfileModal } from '@/components/Modals/ProfileModal';
 import { ExportModal } from '@/components/Modals/ExportModal';
 import { ShareModal } from '@/components/Modals/ShareModal';
+import { EditorSkeleton } from '@/components/Editor/EditorSkeleton';
 
 interface DocumentRoomViewProps {
   roomId: string;
@@ -18,10 +19,15 @@ interface DocumentRoomViewProps {
 
 export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) => {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [isSplitView, setIsSplitView] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const {
     ydoc,
@@ -39,6 +45,10 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
     const randomId = `doc-${Math.random().toString(36).substring(2, 8)}`;
     router.push(`/doc/${randomId}`);
   };
+
+  if (!mounted) {
+    return <EditorSkeleton />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100">

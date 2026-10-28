@@ -47,18 +47,19 @@ export function useCollaboration(roomId: string) {
   const [updateCount, setUpdateCount] = useState<number>(0);
   const [latencyMs, setLatencyMs] = useState<number>(12);
 
-  // User profile
-  const [currentUser, setCurrentUser] = useState<{ name: string; color: string }>(() => {
-    if (typeof window !== 'undefined') {
-      const savedName = localStorage.getItem('syncpad_username');
-      const savedColor = localStorage.getItem('syncpad_usercolor');
-      return {
-        name: savedName || getRandomName(),
-        color: savedColor || getRandomColor(),
-      };
-    }
-    return { name: 'Collaborator', color: '#6366f1' };
+  // User profile with deterministic SSR-safe default
+  const [currentUser, setCurrentUser] = useState<{ name: string; color: string }>({
+    name: 'Collaborator',
+    color: '#6366f1',
   });
+
+  // Client-side initialization of profile from localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedName = localStorage.getItem('syncpad_username') || getRandomName();
+    const savedColor = localStorage.getItem('syncpad_usercolor') || getRandomColor();
+    setCurrentUser({ name: savedName, color: savedColor });
+  }, []);
 
   const providerRef = useRef<WebsocketProvider | null>(null);
   const indexeddbProviderRef = useRef<IndexeddbPersistence | null>(null);
