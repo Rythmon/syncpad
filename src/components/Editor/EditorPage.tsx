@@ -153,14 +153,21 @@ export const EditorPage: React.FC<EditorPageProps> = ({ roomId }) => {
       {/* LEFT SIDEBAR (aside) matching realtime-code-editor-main */}
       <aside className="w-[240px] bg-[#1c1e29] border-r border-[#2b2d3c] flex flex-col justify-between p-4 z-20 shrink-0">
         <div className="flex flex-col flex-1 overflow-hidden">
-          {/* Logo */}
-          <div className="border-b border-[#343746] pb-3 mb-4">
-            <img
-              src="/code-sync.png"
-              alt="SyncPad Logo"
-              className="h-10 w-auto object-contain cursor-pointer"
-              onClick={() => router.push('/')}
-            />
+          {/* Brand Logo & Name */}
+          <div
+            className="border-b border-[#343746] pb-3 mb-4 flex items-center gap-2.5 cursor-pointer select-none group"
+            onClick={() => router.push('/')}
+            title="SyncPad — Back to Lobby"
+          >
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4aed88] to-[#10b981] flex items-center justify-center text-[#111827] font-black text-base shadow group-hover:scale-105 transition-transform shrink-0">
+              S
+            </div>
+            <div className="flex flex-col">
+              <span className="text-base font-black tracking-tight text-white leading-tight">
+                Sync<span className="text-[#4aed88]">Pad</span>
+              </span>
+              <span className="text-[10px] text-zinc-400 font-mono -mt-0.5">Real-Time Editor</span>
+            </div>
           </div>
 
           {/* Connected Peers Header */}

@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className="min-h-screen bg-[#090a0d] text-zinc-100 antialiased selection:bg-indigo-500/20 selection:text-indigo-200"
+        className="min-h-screen bg-[#1c1e29] text-white antialiased selection:bg-[#4aed88]/30 selection:text-[#4aed88]"
         suppressHydrationWarning
       >
         <ServiceWorkerRegister />

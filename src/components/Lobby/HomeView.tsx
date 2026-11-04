@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
   const router = useRouter();
@@ -16,7 +16,6 @@ export const HomeView: React.FC = () => {
   });
 
   const generateRoomId = () => {
-    // Generate UUID or clean alphanumeric room id
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
       return crypto.randomUUID();
     }
@@ -30,7 +29,7 @@ export const HomeView: React.FC = () => {
     toast.success('Created a new room ID', {
       style: {
         background: '#333',
-        color: '#fff',
+        color: '#50fa7b',
       },
     });
   };
@@ -42,7 +41,7 @@ export const HomeView: React.FC = () => {
       toast.error('ROOM ID & username is required', {
         style: {
           background: '#333',
-          color: '#fff',
+          color: '#ff5555',
         },
       });
       return;
@@ -62,13 +61,20 @@ export const HomeView: React.FC = () => {
 
       {/* Center Card Wrapper */}
       <div className="w-full max-w-[420px] bg-[#282a36] border border-white/[0.08] p-7 rounded-xl shadow-2xl flex flex-col">
-        {/* Brand Logo */}
-        <div className="flex items-center gap-3 mb-6">
-          <img
-            src="/code-sync.png"
-            alt="SyncPad Logo"
-            className="h-14 w-auto object-contain"
-          />
+        {/* Brand Header */}
+        <div className="flex items-center gap-3.5 mb-6 pb-4 border-b border-[#343746]">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#4aed88] via-[#10b981] to-[#059669] flex items-center justify-center text-[#111827] font-black text-2xl shadow-lg shadow-[#4aed88]/20 shrink-0">
+            S
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-0.5">
+              <span>Sync</span>
+              <span className="text-[#4aed88]">Pad</span>
+            </h1>
+            <span className="text-[11px] text-zinc-400 font-mono tracking-wide">
+              Real-Time Collaborative Code Editor
+            </span>
+          </div>
         </div>
 
         <h4 className="text-sm font-semibold text-zinc-200 mb-4">
@@ -120,7 +126,7 @@ export const HomeView: React.FC = () => {
       {/* Footer */}
       <footer className="mt-12 text-xs text-zinc-400 flex items-center gap-1.5">
         <span>Built with 💛 by</span>
-        <span className="text-[#4aed88] font-semibold">SyncPad Distributed Team</span>
+        <span className="text-[#4aed88] font-semibold">SyncPad Core Team</span>
         <span>·</span>
         <span className="text-zinc-500">Yjs CRDTs &amp; Redis Pub/Sub</span>
       </footer>

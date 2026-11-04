@@ -1,11 +1,11 @@
 {
-  "name": "SyncPad — Collaborative Editor",
+  "name": "SyncPad — Real-Time Collaborative Code Editor",
   "short_name": "SyncPad",
-  "description": "Distributed, conflict-free collaborative text editor powered by Yjs CRDTs and Redis Pub/Sub",
+  "description": "Distributed, conflict-free collaborative code editor powered by Yjs CRDTs and Redis Pub/Sub",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#090d16",
-  "theme_color": "#4f46e5",
+  "background_color": "#1c1e29",
+  "theme_color": "#4aed88",
   "icons": [
     {
       "src": "/favicon.ico",
