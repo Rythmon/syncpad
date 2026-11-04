@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -11,4 +11,4 @@ COPY server/ ./server/
 COPY tsconfig.server.json ./
 
 EXPOSE 1234
-CMD ["pnpm", "dev:server"]
+CMD ["npx", "tsx", "server/index.ts"]
