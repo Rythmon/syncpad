@@ -3,149 +3,166 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b0f19;
-  --foreground: #f1f5f9;
-  --card-bg: #111827;
-  --border-color: #1f2937;
+  --background: #090a0d;
+  --surface: #111318;
+  --surface-raised: #161920;
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --foreground: #f4f4f6;
+  --foreground-muted: #8b8d98;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* Custom scrollbars */
+/* Minimalist refined scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: rgba(255, 255, 255, 0.24);
 }
 
-/* TipTap Collaborative Editor Styling */
+/* TipTap Collaborative Document Canvas */
 .tiptap {
-  min-height: 520px;
+  min-height: 600px;
   outline: none;
-  font-size: 1.05rem;
-  line-height: 1.75;
-  color: #e2e8f0;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: #e4e4e7;
 }
 
 .tiptap > * + * {
-  margin-top: 0.85em;
+  margin-top: 1.15em;
 }
 
+/* Placeholder styling */
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #64748b;
+  color: #52525b;
   pointer-events: none;
   height: 0;
+  font-weight: 400;
 }
 
-/* Virtualized Block Optimization (Content-Visibility) */
-.virtualized-block-content .tiptap > * {
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 45px;
-}
-
-/* Headings */
+/* Headings with editorial typographic hierarchy */
 .tiptap h1 {
-  font-size: 2.1rem;
+  font-size: 2.25rem;
   font-weight: 700;
   line-height: 1.25;
-  color: #f8fafc;
-  margin-top: 1.4em;
+  color: #fafafa;
+  margin-top: 1.8em;
+  margin-bottom: 0.45em;
+  letter-spacing: -0.03em;
+}
+
+.tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #f4f4f5;
+  margin-top: 1.6em;
   margin-bottom: 0.4em;
   letter-spacing: -0.02em;
 }
 
-.tiptap h2 {
-  font-size: 1.55rem;
+.tiptap h3 {
+  font-size: 1.2rem;
   font-weight: 600;
-  line-height: 1.35;
-  color: #f1f5f9;
-  margin-top: 1.2em;
+  line-height: 1.4;
+  color: #e4e4e7;
+  margin-top: 1.3em;
   margin-bottom: 0.35em;
   letter-spacing: -0.01em;
 }
 
-.tiptap h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #e2e8f0;
-  margin-top: 1em;
-  margin-bottom: 0.3em;
-}
-
-/* Lists */
+/* Editorial Lists */
 .tiptap ul {
   list-style-type: disc;
-  padding-left: 1.5rem;
+  padding-left: 1.6rem;
 }
 
 .tiptap ol {
   list-style-type: decimal;
-  padding-left: 1.5rem;
+  padding-left: 1.6rem;
 }
 
 .tiptap li {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.35em;
 }
 
-/* Blockquotes */
+.tiptap li::marker {
+  color: #71717a;
+}
+
+/* Refined Blockquote */
 .tiptap blockquote {
-  border-left: 3px solid #6366f1;
-  padding-left: 1rem;
+  border-left: 2px solid #3f3f46;
+  padding-left: 1.1rem;
   margin-left: 0;
   margin-right: 0;
+  color: #a1a1aa;
   font-style: italic;
-  color: #94a3b8;
 }
 
 /* Code Blocks */
 .tiptap pre {
-  background: #0f172a;
-  color: #38bdf8;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  padding: 1rem 1.25rem;
-  border-radius: 0.6rem;
-  border: 1px solid #1e293b;
+  background: #0d0f12;
+  color: #e4e4e7;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  padding: 1.15rem 1.35rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   overflow-x: auto;
 }
 
 .tiptap code {
-  background: rgba(30, 41, 59, 0.8);
-  color: #38bdf8;
-  padding: 0.15rem 0.4rem;
+  background: rgba(255, 255, 255, 0.07);
+  color: #e4e4e7;
+  padding: 0.2rem 0.42rem;
   border-radius: 0.3rem;
-  font-size: 0.9em;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.88em;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+.tiptap pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
 }
 
 .tiptap hr {
   border: none;
-  border-top: 1px solid #1e293b;
-  margin: 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 2.2rem 0;
 }
 
-/* Collaborative Cursor & Presence Caret Styling */
+/* Collaborative Cursor & Caret Styling (Linear / Figma Quality) */
 .collaboration-cursor__caret {
   position: relative;
   margin-left: -1px;
   margin-right: -1px;
-  border-left: 2px solid #0d0d0d;
-  border-right: 2px solid #0d0d0d;
+  border-left: 2px solid currentColor;
+  border-right: none;
   word-break: normal;
   pointer-events: none;
   animation: cursorBlink 1.4s ease-in-out infinite;
@@ -153,40 +170,37 @@ body {
 
 @keyframes cursorBlink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50% { opacity: 0.35; }
 }
 
 .collaboration-cursor__label {
   position: absolute;
-  top: -1.5em;
+  top: -1.65em;
   left: -2px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-style: normal;
-  font-weight: 600;
-  line-height: normal;
+  font-weight: 500;
+  line-height: 1;
   user-select: none;
   color: #ffffff;
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 3px 6px;
+  border-radius: 3px;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-  z-index: 20;
-  letter-spacing: 0.02em;
-  transition: opacity 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  z-index: 25;
+  letter-spacing: 0.01em;
+  transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
-/* Selection highlight by peers */
+/* Collaborative selection highlight */
 .ProseMirror-selectednode {
-  outline: 2px solid #6366f1;
+  outline: 2px solid rgba(99, 102, 241, 0.5);
+  outline-offset: 2px;
 }
 
-/* Glowing animations */
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.6); }
-}
-
-.pulse-glow {
-  animation: pulseGlow 2.5s infinite;
+/* Virtualized Block Optimization (Content-Visibility) */
+.virtualized-block-content .tiptap > * {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 40px;
 }

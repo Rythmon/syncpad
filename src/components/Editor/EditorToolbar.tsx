@@ -16,63 +16,66 @@ import {
   Minus,
   Undo2,
   Redo2,
-  Cpu,
-  Eraser,
+  Zap,
+  RotateCcw,
+  Code2,
 } from 'lucide-react';
 
 interface EditorToolbarProps {
   editor: Editor | null;
   isVirtualized: boolean;
   onToggleVirtualization: () => void;
+  onResetDocument?: () => void;
 }
 
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   editor,
   isVirtualized,
   onToggleVirtualization,
+  onResetDocument,
 }) => {
   if (!editor) return null;
 
   const btnClass = (active: boolean) =>
-    `p-2 rounded-lg transition-all text-sm font-medium flex items-center justify-center ${
+    `p-1.5 rounded-md transition-colors text-xs flex items-center justify-center ${
       active
-        ? 'bg-indigo-600/30 text-indigo-400 border border-indigo-500/40 shadow-sm'
-        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
+        ? 'bg-white/10 text-white font-medium'
+        : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06]'
     }`;
 
   return (
-    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1.5 p-2 px-3 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 rounded-t-xl select-none">
+    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 px-4 py-2 bg-[#0d0e12]/90 backdrop-blur-md border-b border-white/[0.08] select-none text-xs">
       {/* History */}
-      <div className="flex items-center gap-1 pr-2 border-r border-slate-800">
+      <div className="flex items-center gap-0.5 pr-2 mr-1 border-r border-white/[0.08]">
         <button
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 disabled:opacity-30 disabled:hover:bg-transparent"
-          title="Undo (Ctrl+Z)"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] disabled:opacity-25 disabled:hover:bg-transparent"
+          title="Undo (⌘Z)"
         >
-          <Undo2 className="w-4 h-4" />
+          <Undo2 className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 disabled:opacity-30 disabled:hover:bg-transparent"
-          title="Redo (Ctrl+Y)"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] disabled:opacity-25 disabled:hover:bg-transparent"
+          title="Redo (⌘⇧Z)"
         >
-          <Redo2 className="w-4 h-4" />
+          <Redo2 className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Headings */}
-      <div className="flex items-center gap-1 pr-2 border-r border-slate-800">
+      <div className="flex items-center gap-0.5 pr-2 mr-1 border-r border-white/[0.08]">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           className={btnClass(editor.isActive('heading', { level: 1 }))}
           title="Heading 1"
         >
-          <Heading1 className="w-4 h-4" />
+          <Heading1 className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
@@ -80,7 +83,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           className={btnClass(editor.isActive('heading', { level: 2 }))}
           title="Heading 2"
         >
-          <Heading2 className="w-4 h-4" />
+          <Heading2 className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
@@ -88,27 +91,27 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           className={btnClass(editor.isActive('heading', { level: 3 }))}
           title="Heading 3"
         >
-          <Heading3 className="w-4 h-4" />
+          <Heading3 className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Formatting */}
-      <div className="flex items-center gap-1 pr-2 border-r border-slate-800">
+      {/* Inline Formatting */}
+      <div className="flex items-center gap-0.5 pr-2 mr-1 border-r border-white/[0.08]">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={btnClass(editor.isActive('bold'))}
-          title="Bold (Ctrl+B)"
+          title="Bold (⌘B)"
         >
-          <Bold className="w-4 h-4" />
+          <Bold className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={btnClass(editor.isActive('italic'))}
-          title="Italic (Ctrl+I)"
+          title="Italic (⌘I)"
         >
-          <Italic className="w-4 h-4" />
+          <Italic className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
@@ -116,27 +119,27 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           className={btnClass(editor.isActive('strike'))}
           title="Strikethrough"
         >
-          <Strikethrough className="w-4 h-4" />
+          <Strikethrough className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleCode().run()}
           className={btnClass(editor.isActive('code'))}
-          title="Inline Code"
+          title="Inline Code (⌘E)"
         >
-          <Code className="w-4 h-4" />
+          <Code className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Lists & Quotes */}
-      <div className="flex items-center gap-1 pr-2 border-r border-slate-800">
+      {/* Blocks & Lists */}
+      <div className="flex items-center gap-0.5 pr-2 mr-1 border-r border-white/[0.08]">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={btnClass(editor.isActive('bulletList'))}
-          title="Bullet List"
+          title="Bulleted List"
         >
-          <List className="w-4 h-4" />
+          <List className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
@@ -144,7 +147,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           className={btnClass(editor.isActive('orderedList'))}
           title="Numbered List"
         >
-          <ListOrdered className="w-4 h-4" />
+          <ListOrdered className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
@@ -152,42 +155,53 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           className={btnClass(editor.isActive('blockquote'))}
           title="Blockquote"
         >
-          <Quote className="w-4 h-4" />
+          <Quote className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={btnClass(editor.isActive('codeBlock'))}
+          title="Code Block"
+        >
+          <Code2 className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-          title="Divider"
+          className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06]"
+          title="Horizontal Divider"
         >
-          <Minus className="w-4 h-4" />
+          <Minus className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Virtualization & Performance Feature */}
-      <div className="ml-auto flex items-center gap-2">
+      {/* Right-aligned utilities */}
+      <div className="ml-auto flex items-center gap-1.5">
+        {/* DOM Virtualization mode pill */}
         <button
           type="button"
           onClick={onToggleVirtualization}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors border ${
             isVirtualized
-              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-              : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-slate-800'
+              ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/15'
+              : 'bg-zinc-800/40 text-zinc-400 border-white/[0.06] hover:bg-zinc-800'
           }`}
-          title="Toggle text block virtualization to eliminate offscreen DOM recalculations during concurrent typing"
+          title="Toggle CSS content-visibility block virtualization for heavy documents"
         >
-          <Cpu className="w-3.5 h-3.5" />
-          <span>{isVirtualized ? 'Virtualization: ON' : 'Virtualization: OFF'}</span>
+          <Zap className={`w-3 h-3 ${isVirtualized ? 'text-emerald-400' : 'text-zinc-500'}`} />
+          <span>{isVirtualized ? 'DOM Virtualized' : 'Virtualization Off'}</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-          className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-          title="Clear Formatting"
-        >
-          <Eraser className="w-4 h-4" />
-        </button>
+        {onResetDocument && (
+          <button
+            type="button"
+            onClick={onResetDocument}
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06]"
+            title="Reset to RFC Template"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

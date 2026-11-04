@@ -6,12 +6,13 @@ import { useCollaboration } from '@/hooks/useCollaboration';
 import { Navbar } from '@/components/Navigation/Navbar';
 import { CollaborativeEditor } from '@/components/Editor/CollaborativeEditor';
 import { OfflineBanner } from '@/components/Offline/OfflineBanner';
-import { LivePresenceHUD } from '@/components/Presence/LivePresenceHUD';
+import { SyncTelemetryInspector } from '@/components/Presence/LivePresenceHUD';
 import { SplitViewSimulator } from '@/components/Simulation/SplitViewSimulator';
 import { ProfileModal } from '@/components/Modals/ProfileModal';
 import { ExportModal } from '@/components/Modals/ExportModal';
 import { ShareModal } from '@/components/Modals/ShareModal';
 import { EditorSkeleton } from '@/components/Editor/EditorSkeleton';
+import { Activity } from 'lucide-react';
 
 interface DocumentRoomViewProps {
   roomId: string;
@@ -24,6 +25,7 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -42,7 +44,7 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
   } = useCollaboration(roomId);
 
   const handleNewDocument = () => {
-    const randomId = `doc-${Math.random().toString(36).substring(2, 8)}`;
+    const randomId = `rfc-${Math.random().toString(36).substring(2, 7)}`;
     router.push(`/doc/${randomId}`);
   };
 
@@ -51,8 +53,8 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100">
-      {/* Top Navigation */}
+    <div className="min-h-screen flex flex-col bg-[#090a0d] text-zinc-100">
+      {/* Top Minimalist Navigation */}
       <Navbar
         roomId={roomId}
         ydoc={ydoc}
@@ -65,6 +67,7 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
         onOpenExport={() => setIsExportOpen(true)}
         onOpenShare={() => setIsShareOpen(true)}
         onNewDocument={handleNewDocument}
+        onOpenInspector={() => setIsInspectorOpen(true)}
       />
 
       {/* Offline Alert Banner */}
@@ -73,21 +76,23 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
         onReconnect={toggleOfflineSimulation}
       />
 
-      {/* Main Workspace Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Main Workspace Canvas */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isSplitView ? (
-          /* Side-by-Side Multi-Peer Simulation Grid */
+          /* Multi-Peer Concurrent Playground Grid */
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-140px)]">
             <div className="flex flex-col h-full overflow-y-auto pr-1">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-                <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/[0.08]">
+                <div className="flex items-center gap-2">
                   <span
                     className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: currentUser.color }}
                   />
-                  Peer 1: {currentUser.name} (You)
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">Primary Node</span>
+                  <span className="text-xs font-semibold text-zinc-200">
+                    Primary Editor · {currentUser.name} (You)
+                  </span>
+                </div>
+                <span className="text-[10px] text-zinc-500 font-mono">Local Node</span>
               </div>
               <CollaborativeEditor
                 ydoc={ydoc}
@@ -98,7 +103,7 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
               />
             </div>
 
-            <div className="h-full overflow-hidden rounded-2xl border border-slate-800 shadow-2xl">
+            <div className="h-full overflow-hidden rounded-xl border border-white/[0.08] shadow-2xl">
               <SplitViewSimulator
                 roomId={roomId}
                 onClose={() => setIsSplitView(false)}
@@ -106,7 +111,7 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
             </div>
           </div>
         ) : (
-          /* Single Editor Layout */
+          /* Single Document View (Readable Measure) */
           <div className="max-w-4xl mx-auto">
             <CollaborativeEditor
               ydoc={ydoc}
@@ -119,14 +124,45 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
         )}
       </main>
 
-      {/* Floating CRDT Diagnostics HUD */}
-      <LivePresenceHUD
+      {/* Quiet Non-Intrusive Bottom Status Chip */}
+      <div className="fixed bottom-4 right-4 z-30">
+        <button
+          type="button"
+          onClick={() => setIsInspectorOpen(true)}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111318]/90 hover:bg-[#161920] border border-white/[0.08] text-xs text-zinc-400 hover:text-zinc-200 shadow-lg backdrop-blur-md transition-colors"
+          title="Open Real-Time CRDT Telemetry & Inspector"
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              connectionStatus === 'connected'
+                ? 'bg-emerald-400'
+                : connectionStatus === 'connecting'
+                ? 'bg-amber-400 animate-pulse'
+                : 'bg-rose-400'
+            }`}
+          />
+          <span className="font-mono text-[11px]">
+            {connectionStatus === 'connected' ? `${stats.latencyMs}ms` : 'Offline'}
+          </span>
+          <span className="text-zinc-600">·</span>
+          <span className="font-mono text-[11px]">{stats.updateCount} ops</span>
+          <span className="text-zinc-600 hidden sm:inline">·</span>
+          <span className="hidden sm:flex items-center gap-1 text-[11px] text-zinc-400">
+            <Activity className="w-3 h-3 text-indigo-400" />
+            <span>Inspector</span>
+          </span>
+        </button>
+      </div>
+
+      {/* Modals & Telemetry Drawer */}
+      <SyncTelemetryInspector
+        isOpen={isInspectorOpen}
+        onClose={() => setIsInspectorOpen(false)}
         stats={stats}
         connectionStatus={connectionStatus}
         onToggleOffline={toggleOfflineSimulation}
       />
 
-      {/* Modals */}
       <ProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
@@ -138,7 +174,7 @@ export const DocumentRoomView: React.FC<DocumentRoomViewProps> = ({ roomId }) =>
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
         ydoc={ydoc}
-        documentTitle={ydoc.getText('document-title').toString() || 'SyncPad Document'}
+        documentTitle={ydoc.getText('document-title').toString() || 'RFC 042: Distributed CRDT Synchronization'}
       />
 
       <ShareModal

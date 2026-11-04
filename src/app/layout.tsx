@@ -3,9 +3,9 @@ import './globals.css';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 
 export const metadata: Metadata = {
-  title: 'SyncPad — Real-Time Collaborative Editor (CRDTs & Redis Pub/Sub)',
+  title: 'SyncPad — Real-Time Collaborative Editor',
   description:
-    'Distributed, conflict-free collaborative text editor for concurrent multi-user editing with Yjs CRDTs, Redis Pub/Sub, and offline-first IndexedDB synchronization.',
+    'A distributed, conflict-free collaborative editor built with Yjs CRDTs, Redis Pub/Sub, and offline-first IndexedDB persistence.',
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className="min-h-screen bg-[#0b0f19] text-slate-100 antialiased selection:bg-indigo-500/30 selection:text-indigo-200"
+        className="min-h-screen bg-[#090a0d] text-zinc-100 antialiased selection:bg-indigo-500/20 selection:text-indigo-200"
         suppressHydrationWarning
       >
         <ServiceWorkerRegister />

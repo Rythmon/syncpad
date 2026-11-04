@@ -10,6 +10,7 @@ import CharacterCount from '@tiptap/extension-character-count';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { EditorToolbar } from './EditorToolbar';
+import { CheckCircle2, Clock } from 'lucide-react';
 
 interface CollaborativeEditorProps {
   ydoc: Y.Doc;
@@ -18,6 +19,36 @@ interface CollaborativeEditorProps {
   isSimulatedOffline: boolean;
   roomId: string;
 }
+
+const DEFAULT_RFC_CONTENT = `
+<h1>RFC 042: Distributed CRDT Synchronization &amp; Offline Persistence Architecture</h1>
+<p><em>Author: Distributed Systems Core Team · Target Release: v2.4 · Status: Production-Ready</em></p>
+
+<h2>1. Overview &amp; Design Goals</h2>
+<p>SyncPad implements a decentralized collaborative document model designed for high-concurrency editing. Rather than routing all keystrokes through an operational transform (OT) authority requiring distributed mutex locks, replica convergence is guaranteed mathematically via <strong>Yjs Conflict-Free Replicated Data Types (CRDTs)</strong>.</p>
+
+<h2>2. Real-Time Concurrency Model</h2>
+<p>Replicas operate on commutative state vectors. When multiple engineers write to the same character block simultaneously, conflicts are resolved deterministically using unique client identifiers and logical Lamport clocks without human intervention or lost edits.</p>
+<ul>
+  <li><strong>Commutative Merges:</strong> Operation ordering is mathematically independent of arrival sequence.</li>
+  <li><strong>State Vector Delta Exchange:</strong> Handshakes compute binary diffs, transmitting only unobserved transactions.</li>
+  <li><strong>Independent Undo Stacks:</strong> Local undo and redo actions operate strictly on the author's operations.</li>
+</ul>
+
+<h2>3. Cross-Pod Presence via Redis Pub/Sub</h2>
+<p>Live cursor telemetry, character selections, and user awareness states are multiplexed over Redis channels to maintain sub-15ms latency across geographically distributed WebSocket gateway clusters.</p>
+
+<pre><code>// Two-phase state vector reconciliation
+const localVector = Y.encodeStateVector(doc);
+const remoteDelta = Y.encodeStateAsUpdate(remoteDoc, localVector);
+Y.applyUpdate(doc, remoteDelta, 'network-handshake');</code></pre>
+
+<h2>4. Offline-First Durability &amp; Background Sync</h2>
+<p>All transactions are written synchronously to client-side <code>IndexedDB</code> persistence layers prior to socket transmission. If network drops occur, authors continue editing seamlessly in disconnected mode; all local mutations replay and reconcile upon reconnection.</p>
+
+<h2>5. Client-Side Rendering Optimization</h2>
+<p>Large documents leverage modern CSS <code>content-visibility: auto</code> containment boundaries to virtualize off-screen DOM blocks, keeping input latency under 16ms even during intensive multi-peer concurrent typing bursts.</p>
+`;
 
 export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   ydoc,
@@ -33,7 +64,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
     {
       extensions: [
         StarterKit.configure({
-          // History must be false when using Yjs collaboration to prevent conflict
+          // History must be disabled when using Yjs collaboration to prevent conflicting local undo queues
           history: false,
         }),
         Collaboration.configure({
@@ -52,7 +83,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
             ]
           : []),
         Placeholder.configure({
-          placeholder: 'Write your thoughts, notes, or collaborate live in real time...',
+          placeholder: 'Start writing or press "/" for commands...',
           emptyEditorClass: 'is-editor-empty',
         }),
         CharacterCount.configure({
@@ -62,7 +93,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
       editorProps: {
         attributes: {
           class:
-            'prose prose-invert max-w-none focus:outline-none min-h-[500px] px-8 py-6 text-slate-100',
+            'prose prose-invert max-w-none focus:outline-none min-h-[580px] px-6 sm:px-12 py-8 text-zinc-200',
         },
       },
       onUpdate: () => {
@@ -83,7 +114,7 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
               color: currentUser.color,
               isTyping: false,
             });
-          }, 1200);
+          }, 1000);
         }
       },
     },
@@ -94,83 +125,72 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   useEffect(() => {
     if (!editor) return;
 
-    // Wait slightly to verify if remote sync populated the document
     const timer = setTimeout(() => {
       if (editor.isEmpty) {
-        editor.commands.setContent(`
-          <h1>SyncPad — Real-Time Collaborative Editor</h1>
-          <p>Welcome to <strong>SyncPad</strong>! A distributed, conflict-free collaborative editor engineered for high-concurrency multi-user editing with <strong>Yjs (CRDTs)</strong>, <strong>WebSockets</strong>, and <strong>Redis Pub/Sub</strong>.</p>
-          
-          <h2>⚡ Architecture Highlights</h2>
-          <ul>
-            <li><strong>CRDT Engine (Yjs):</strong> Mathematical conflict-free replicated data types ensuring all client replicas converge consistently without centralized document locking.</li>
-            <li><strong>Low-Latency Presence:</strong> Live cursor positions, text selection ranges, and real-time typing badges broadcasted via Redis Pub/Sub channels.</li>
-            <li><strong>Offline-First Durability:</strong> Automatic client-side persistence via <code>IndexedDB</code> and Service Workers. Toggle offline mode anytime to test disconnected editing!</li>
-            <li><strong>Block Virtualization:</strong> DOM text blocks are dynamically virtualized using <code>content-visibility: auto</code>, cutting unnecessary offscreen re-renders during intense typing bursts.</li>
-          </ul>
-
-          <h2>🧪 Interactive Experimentation</h2>
-          <blockquote>
-            Click <strong>"Split-View Demo"</strong> in the top navigation bar to open a second concurrent peer on this same screen, or share the room URL across tabs/browsers to see real-time cursor tracking in action!
-          </blockquote>
-
-          <hr />
-          <p>Start typing here to test live collaboration...</p>
-        `);
+        editor.commands.setContent(DEFAULT_RFC_CONTENT);
       }
-    }, 600);
+    }, 450);
 
     return () => clearTimeout(timer);
   }, [editor]);
 
+  const handleResetDocument = () => {
+    if (editor) {
+      editor.commands.setContent(DEFAULT_RFC_CONTENT);
+    }
+  };
+
   const wordCount = editor?.storage.characterCount.words() ?? 0;
   const characterCount = editor?.storage.characterCount.characters() ?? 0;
+  const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <div className="flex flex-col bg-slate-900/60 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-sm overflow-hidden">
+    <div className="flex flex-col bg-[#101217] border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden transition-all">
       {/* Editor Formatting Toolbar */}
       <EditorToolbar
         editor={editor}
         isVirtualized={isVirtualized}
         onToggleVirtualization={() => setIsVirtualized((prev) => !prev)}
+        onResetDocument={handleResetDocument}
       />
 
-      {/* Editor Content Area with Virtualization Class */}
+      {/* Editor Content Canvas */}
       <div
-        className={`relative transition-all min-h-[550px] bg-slate-950/40 ${
+        className={`relative transition-all min-h-[600px] bg-[#0c0d11]/60 ${
           isVirtualized ? 'virtualized-block-content' : ''
         }`}
       >
         <EditorContent editor={editor} />
       </div>
 
-      {/* Editor Status Footer */}
-      <div className="flex items-center justify-between px-6 py-2.5 bg-slate-900/80 border-t border-slate-800/80 text-xs text-slate-400 select-none">
+      {/* Understated Status Footer */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2.5 bg-[#0e1014] border-t border-white/[0.06] text-xs text-zinc-400 select-none">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="font-medium text-slate-300">{wordCount}</span> words
+            <span className="font-medium text-zinc-300">{wordCount}</span>
+            <span>words</span>
           </div>
-          <div className="w-1 h-1 rounded-full bg-slate-700" />
+          <span className="text-zinc-600">·</span>
           <div className="flex items-center gap-1.5">
-            <span className="font-medium text-slate-300">{characterCount}</span> characters
+            <span className="font-medium text-zinc-300">{characterCount}</span>
+            <span>characters</span>
           </div>
-          <div className="w-1 h-1 rounded-full bg-slate-700" />
-          <div className="flex items-center gap-1.5 text-indigo-400">
-            <span>Room:</span>
-            <span className="font-mono bg-indigo-950/50 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-800/40">
-              {roomId}
-            </span>
+          <span className="text-zinc-600 hidden sm:inline">·</span>
+          <div className="hidden sm:flex items-center gap-1.5 text-zinc-400">
+            <Clock className="w-3.5 h-3.5 text-zinc-500" />
+            <span>{readingTimeMinutes} min read</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          {isVirtualized && (
-            <span className="text-[11px] px-2 py-0.5 bg-emerald-950/60 text-emerald-300 border border-emerald-800/40 rounded-full font-mono flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              DOM Virtualization Enabled
-            </span>
-          )}
-          <span className="text-slate-500">Auto-saved to IndexedDB</span>
+          <div className="flex items-center gap-1.5 text-zinc-400">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Saved to IndexedDB</span>
+          </div>
+          <span className="text-zinc-600">·</span>
+          <span className="font-mono text-[11px] text-zinc-400">
+            {roomId}
+          </span>
         </div>
       </div>
     </div>

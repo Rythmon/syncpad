@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CollaborationStats } from '@/hooks/useCollaboration';
 import { formatBytes } from '@/lib/utils';
 import {
@@ -8,146 +8,172 @@ import {
   HardDrive,
   Radio,
   Layers,
-  ChevronDown,
-  ChevronUp,
   Database,
   Wifi,
   WifiOff,
+  X,
+  Server,
+  Terminal,
 } from 'lucide-react';
 
-interface LivePresenceHUDProps {
+interface SyncTelemetryInspectorProps {
+  isOpen: boolean;
+  onClose: () => void;
   stats: CollaborationStats;
   connectionStatus: 'connecting' | 'connected' | 'disconnected';
   onToggleOffline: () => void;
 }
 
-export const LivePresenceHUD: React.FC<LivePresenceHUDProps> = ({
+export const SyncTelemetryInspector: React.FC<SyncTelemetryInspectorProps> = ({
+  isOpen,
+  onClose,
   stats,
   connectionStatus,
   onToggleOffline,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  const getLatencyColor = (ms: number) => {
-    if (ms <= 25) return 'text-emerald-400';
-    if (ms <= 60) return 'text-amber-400';
-    return 'text-rose-400';
-  };
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 flex flex-col bg-slate-900/90 border border-slate-800 rounded-xl shadow-2xl backdrop-blur-md max-w-sm w-80 text-xs transition-all overflow-hidden">
-      {/* Header / Toggle */}
-      <div
-        className="flex items-center justify-between px-3.5 py-2.5 bg-slate-800/60 border-b border-slate-700/50 cursor-pointer select-none hover:bg-slate-800/80 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center gap-2 font-semibold text-slate-200">
-          <Activity className="w-4 h-4 text-indigo-400" />
-          <span>Real-Time CRDT Diagnostics</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span
-            className={`w-2 h-2 rounded-full ${
-              connectionStatus === 'connected'
-                ? 'bg-emerald-400 animate-pulse'
-                : connectionStatus === 'connecting'
-                ? 'bg-amber-400 animate-ping'
-                : 'bg-rose-400'
-            }`}
-          />
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
-          ) : (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
-          )}
-        </div>
-      </div>
-
-      {/* Expanded Metrics Panel */}
-      {isExpanded && (
-        <div className="p-3.5 space-y-3">
-          {/* Grid Stats */}
-          <div className="grid grid-cols-2 gap-2">
-            {/* WebSocket Latency */}
-            <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 flex flex-col">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium flex items-center gap-1">
-                <Radio className="w-3 h-3 text-indigo-400" />
-                RTT Ping
-              </span>
-              <span className={`text-base font-bold font-mono mt-0.5 ${getLatencyColor(stats.latencyMs)}`}>
-                {connectionStatus === 'connected' ? `${stats.latencyMs} ms` : 'Disconnected'}
-              </span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="relative w-full max-w-lg bg-[#111318] border border-white/[0.08] rounded-xl shadow-2xl p-6 text-zinc-100 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4 mb-5 border-b border-white/[0.08]">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-md bg-white/[0.06] text-zinc-200">
+              <Activity className="w-4 h-4 text-indigo-400" />
             </div>
-
-            {/* Document Size */}
-            <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 flex flex-col">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium flex items-center gap-1">
-                <HardDrive className="w-3 h-3 text-cyan-400" />
-                Doc CRDT
-              </span>
-              <span className="text-base font-bold font-mono text-cyan-300 mt-0.5">
-                {formatBytes(stats.docByteSize)}
-              </span>
-            </div>
-
-            {/* CRDT Vector Ops */}
-            <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 flex flex-col">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium flex items-center gap-1">
-                <Layers className="w-3 h-3 text-violet-400" />
-                Vector Updates
-              </span>
-              <span className="text-base font-bold font-mono text-violet-300 mt-0.5">
-                {stats.updateCount} ops
-              </span>
-            </div>
-
-            {/* IndexedDB Status */}
-            <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 flex flex-col">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium flex items-center gap-1">
-                <Database className="w-3 h-3 text-emerald-400" />
-                IndexedDB
-              </span>
-              <span className="text-xs font-semibold text-emerald-300 mt-1 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                Persistent
-              </span>
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-100">
+                Sync Engine &amp; CRDT Telemetry
+              </h2>
+              <p className="text-[11px] text-zinc-400">
+                Low-level diagnostics for distributed consistency &amp; presence
+              </p>
             </div>
           </div>
 
-          {/* Redis PubSub Status */}
-          <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 text-[11px] flex items-center justify-between">
-            <span className="text-slate-400">Presence Layer:</span>
-            <span className="font-mono text-indigo-300 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-              Redis Pub/Sub Layer
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Telemetry Metrics Grid */}
+        <div className="grid grid-cols-2 gap-2.5 mb-4">
+          {/* Latency */}
+          <div className="p-3 rounded-lg bg-[#0c0e12] border border-white/[0.06] flex flex-col">
+            <div className="flex items-center justify-between text-[11px] text-zinc-400">
+              <span className="flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-indigo-400" />
+                RTT Latency
+              </span>
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  connectionStatus === 'connected' ? 'bg-emerald-400' : 'bg-rose-400'
+                }`}
+              />
+            </div>
+            <span className="text-lg font-mono font-semibold text-zinc-100 mt-1">
+              {connectionStatus === 'connected' ? `${stats.latencyMs} ms` : 'Disconnected'}
             </span>
+            <span className="text-[10px] text-zinc-500 mt-0.5">WebSocket ping round-trip</span>
           </div>
 
-          {/* Offline Simulation Button */}
+          {/* CRDT Document Size */}
+          <div className="p-3 rounded-lg bg-[#0c0e12] border border-white/[0.06] flex flex-col">
+            <div className="flex items-center justify-between text-[11px] text-zinc-400">
+              <span className="flex items-center gap-1.5">
+                <HardDrive className="w-3.5 h-3.5 text-sky-400" />
+                CRDT State Size
+              </span>
+              <span className="text-[10px] text-zinc-500 font-mono">Y.Doc</span>
+            </div>
+            <span className="text-lg font-mono font-semibold text-zinc-100 mt-1">
+              {formatBytes(stats.docByteSize)}
+            </span>
+            <span className="text-[10px] text-zinc-500 mt-0.5">Compact binary state vector</span>
+          </div>
+
+          {/* Reconciled Ops */}
+          <div className="p-3 rounded-lg bg-[#0c0e12] border border-white/[0.06] flex flex-col">
+            <div className="flex items-center justify-between text-[11px] text-zinc-400">
+              <span className="flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-violet-400" />
+                CRDT Operations
+              </span>
+              <span className="text-[10px] text-zinc-500 font-mono">Lamport</span>
+            </div>
+            <span className="text-lg font-mono font-semibold text-zinc-100 mt-1">
+              {stats.updateCount} ops
+            </span>
+            <span className="text-[10px] text-zinc-500 mt-0.5">Commutative delta mutations</span>
+          </div>
+
+          {/* IndexedDB Persistence */}
+          <div className="p-3 rounded-lg bg-[#0c0e12] border border-white/[0.06] flex flex-col">
+            <div className="flex items-center justify-between text-[11px] text-zinc-400">
+              <span className="flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-emerald-400" />
+                IndexedDB Store
+              </span>
+              <span className="text-[10px] text-emerald-400 font-mono">Active</span>
+            </div>
+            <span className="text-sm font-semibold text-zinc-200 mt-1">
+              Offline-First Layer
+            </span>
+            <span className="text-[10px] text-zinc-500 mt-0.5">Synchronous local durability</span>
+          </div>
+        </div>
+
+        {/* Cluster Architecture Info */}
+        <div className="p-3 rounded-lg bg-[#0c0e12] border border-white/[0.06] text-xs space-y-2 mb-4">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-zinc-400 flex items-center gap-1.5">
+              <Server className="w-3 h-3 text-zinc-500" />
+              Presence Relay
+            </span>
+            <span className="font-mono text-zinc-300">Redis Pub/Sub (Cluster Bus)</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-zinc-400 flex items-center gap-1.5">
+              <Terminal className="w-3 h-3 text-zinc-500" />
+              Sync Protocol
+            </span>
+            <span className="font-mono text-zinc-300">Yjs Binary Protocol v1</span>
+          </div>
+        </div>
+
+        {/* Offline Simulation Control */}
+        <div className="pt-2">
           <button
             type="button"
             onClick={onToggleOffline}
-            className={`w-full py-2 px-3 rounded-lg font-medium text-xs flex items-center justify-center gap-2 border transition-all ${
+            className={`w-full py-2.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-2 border transition-colors ${
               stats.isSimulatedOffline
-                ? 'bg-rose-950/60 text-rose-300 border-rose-800/60 hover:bg-rose-900/60'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750 hover:text-white'
+                ? 'bg-rose-500/10 text-rose-300 border-rose-500/20 hover:bg-rose-500/20'
+                : 'bg-white/[0.05] text-zinc-300 border-white/[0.08] hover:bg-white/[0.08] hover:text-white'
             }`}
           >
             {stats.isSimulatedOffline ? (
               <>
                 <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Reconnect WebSocket (Sync CRDT)</span>
+                <span>Reconnect WebSocket (Reconcile CRDT Vector)</span>
               </>
             ) : (
               <>
                 <WifiOff className="w-3.5 h-3.5 text-amber-400" />
-                <span>Simulate Offline Network Drop</span>
+                <span>Simulate Network Disconnection</span>
               </>
             )}
           </button>
+          <p className="text-[10px] text-zinc-500 text-center mt-2">
+            Disconnection allows testing local IndexedDB mutation queue and automatic CRDT delta reconciliation.
+          </p>
         </div>
-      )}
+      </div>
     </div>
   );
 };

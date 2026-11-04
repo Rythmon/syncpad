@@ -10,7 +10,7 @@
 
 ---
 
-## 🌟 Key Highlights & Features
+## Key Capabilities & System Highlights
 
 - **Conflict-Free Collaborative Editing (Yjs CRDTs):**
   - Uses state vectors and conflict-free replicated data types over WebSockets to ensure mathematical replica convergence without central document locking.
@@ -20,7 +20,7 @@
 - **Low-Latency Presence Layer & Redis Pub/Sub:**
   - Real-time live cursor tracking, selection range highlights, and typing activity badges.
   - Broadcasted across multiple WebSocket server instances via Redis Pub/Sub channels (`syncpad:presence:*` and `syncpad:crdt:*`).
-  - Seamless automatic fallback to an in-memory cluster bus if Redis is not locally configured.
+  - Automatic fallback to an in-memory cluster bus if Redis is not locally configured.
 
 - **Offline-First Durability & Background Sync:**
   - Full client-side document persistence via `y-indexeddb` and Service Worker (`sw.js`).
@@ -31,19 +31,18 @@
   - Eliminates DOM recalculation lag during heavy concurrent typing bursts by leveraging CSS `content-visibility: auto` and `contain-intrinsic-size` on large paragraphs and text blocks.
   - Skips offscreen layout passes while maintaining instant searchability and document continuity.
 
-- **Integrated Split-View Multi-Peer Simulator:**
-  - Built-in one-click **"Split-View Demo"** allows testing simultaneous concurrent multi-user editing directly in one browser window without opening a second computer or incognito tab.
+- **Dual-View Collaborator Simulation:**
+  - Built-in one-click **"Dual View"** allows testing simultaneous concurrent multi-user editing directly in one browser window without opening a second computer or incognito tab.
 
-- **Real-Time CRDT Diagnostics HUD:**
-  - Live floating HUD tracking RTT WebSocket ping latency, CRDT state vector byte sizes, inbound/outbound vector update counts, and offline status.
+- **Sync Telemetry & Protocol Inspector:**
+  - Interactive telemetry inspector drawer tracking RTT WebSocket ping latency, CRDT state vector byte sizes, Lamport mutation ops, and offline simulation toggle.
 
-- **Document Export & Customization:**
-  - Instant export to HTML, Plain Text, and JSON CRDT snapshots with celebratory animations.
-  - Customizable collaborator name and cursor color palette.
+- **Document Export:**
+  - Fast export to Markdown (.md), HTML (.html), Plain Text (.txt), and JSON CRDT state vector snapshots.
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -72,12 +71,12 @@ flowchart TD
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Prerequisites
 - **Node.js** v18+ or v20+
 - **pnpm** (or npm / yarn)
-- Optional: **Redis** (if not running, SyncPad automatically operates via its built-in in-memory cluster bus)
+- Optional: **Redis** (if not running, SyncPad operates via its built-in in-memory cluster bus)
 
 ### 2. Installation
 
@@ -116,11 +115,11 @@ Run both Next.js frontend (`:3000`) and the WebSocket gateway (`:1234`) with a s
 pnpm dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) in your browser!
+Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🐳 Running with Docker Compose
+## Running with Docker Compose
 
 Spin up Redis, the Node.js WebSocket Gateway, and the Next.js Frontend together in Docker:
 
@@ -135,7 +134,7 @@ docker-compose up --build
 
 ---
 
-## 🔬 How Concurrent Conflict Resolution Works
+## How Concurrent Conflict Resolution Works
 
 SyncPad relies on **Yjs Conflict-Free Replicated Data Types (CRDTs)**:
 1. Every character and text block is identified by an immutable `(client, clock)` unique tuple.
@@ -148,7 +147,7 @@ SyncPad relies on **Yjs Conflict-Free Replicated Data Types (CRDTs)**:
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 syncpad/
@@ -162,24 +161,25 @@ syncpad/
 │   │   ├── DocumentRoomView.tsx      # Main collaborative controller view
 │   │   ├── Editor/
 │   │   │   ├── CollaborativeEditor.tsx # TipTap + Yjs collaboration component
-│   │   │   └── EditorToolbar.tsx     # Rich formatting controls & virtualization switch
+│   │   │   ├── EditorToolbar.tsx     # Rich formatting controls & virtualization switch
+│   │   │   └── EditorSkeleton.tsx    # SSR fallback skeleton
 │   │   ├── Presence/
 │   │   │   ├── ActiveUsersBar.tsx    # Live collaborator avatars & typing indicators
-│   │   │   └── LivePresenceHUD.tsx   # Real-time CRDT & latency diagnostics HUD
+│   │   │   └── LivePresenceHUD.tsx   # Sync telemetry inspector drawer
 │   │   ├── Navigation/
-│   │   │   └── Navbar.tsx            # Header with synced title & room actions
+│   │   │   └── Navbar.tsx            # Minimalist breadcrumb & workspace navigation
 │   │   ├── Offline/
 │   │   │   └── OfflineBanner.tsx     # Offline mode alert & reconnection CTA
 │   │   ├── Simulation/
 │   │   │   └── SplitViewSimulator.tsx# Side-by-side multi-peer live testing frame
 │   │   └── Modals/
 │   │       ├── ProfileModal.tsx      # Name & cursor color customizer
-│   │       ├── ExportModal.tsx       # Export to HTML, TXT, JSON snapshot
+│   │       ├── ExportModal.tsx       # Export to MD, HTML, TXT, JSON snapshot
 │   │       └── ShareModal.tsx        # Multi-tab room share modal
 │   ├── hooks/
 │   │   └── useCollaboration.ts       # Unified Yjs, WebSocket & IndexedDB hook
 │   └── lib/
-│       ├── colors.ts                 # Collaborator color palettes
+│       ├── colors.ts                 # Collaborator color palettes & profiles
 │       ├── service-worker.ts         # SW registration & Background Sync API
 │       └── utils.ts                  # Classnames & byte formatting utilities
 ├── public/
@@ -196,11 +196,11 @@ syncpad/
 ├── Dockerfile.server                 # WebSocket server container image
 ├── Dockerfile.web                    # Next.js frontend container image
 ├── package.json                      # Dependencies and unified scripts
-└── README.md                         # Documentation
+└── README.md                         # Architecture diagrams & documentation
 ```
 
 ---
 
-## 🛡️ License
+## License
 
 MIT License. Designed and engineered for production-grade real-time collaborative editing.

@@ -5,14 +5,11 @@ import * as Y from 'yjs';
 import { ActiveUsersBar } from '@/components/Presence/ActiveUsersBar';
 import { Collaborator } from '@/hooks/useCollaboration';
 import {
-  FileText,
   Share2,
   Download,
-  Columns,
-  Wifi,
-  WifiOff,
-  FolderPlus,
-  Edit3,
+  Columns2,
+  Plus,
+  Activity,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -27,6 +24,7 @@ interface NavbarProps {
   onOpenExport: () => void;
   onOpenShare: () => void;
   onNewDocument: () => void;
+  onOpenInspector: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,8 +39,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenExport,
   onOpenShare,
   onNewDocument,
+  onOpenInspector,
 }) => {
-  const [title, setTitle] = useState('SyncPad Document');
+  const [title, setTitle] = useState('RFC 042: Distributed CRDT Synchronization');
 
   // Synchronize document title via Yjs CRDT Text
   useEffect(() => {
@@ -53,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (current) {
         setTitle(current);
       } else {
-        ytext.insert(0, 'SyncPad Document');
+        ytext.insert(0, 'RFC 042: Distributed CRDT Synchronization');
       }
     };
 
@@ -76,67 +75,61 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 py-2.5 transition-all">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        {/* Left: Brand & Synced Title */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-              <FileText className="w-4 h-4 text-white" />
+    <header className="sticky top-0 z-30 w-full bg-[#090a0d]/90 backdrop-blur-md border-b border-white/[0.07] px-4 py-2.5 transition-colors">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+        {/* Left: Minimalist Brand & Document Title */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Geometric Minimal Monogram */}
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+              S
             </div>
-            <div className="hidden md:flex flex-col">
-              <span className="text-sm font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
-                SyncPad
-              </span>
-              <span className="text-[10px] text-indigo-400 font-mono -mt-1">CRDT Real-Time</span>
-            </div>
+            <span className="text-xs font-semibold text-zinc-100 tracking-tight hidden sm:inline">
+              SyncPad
+            </span>
           </div>
 
-          <div className="h-5 w-px bg-slate-800 hidden sm:block" />
+          <span className="text-zinc-600 hidden sm:inline">/</span>
 
-          {/* Synced Title Input */}
-          <div className="relative flex items-center group max-w-[200px] sm:max-w-[280px]">
+          {/* Editable Document Title */}
+          <div className="min-w-0 max-w-[180px] sm:max-w-[320px] md:max-w-[420px]">
             <input
               type="text"
               value={title}
               onChange={handleTitleChange}
               placeholder="Untitled Document"
-              className="w-full bg-transparent text-sm font-semibold text-slate-200 border border-transparent rounded-lg px-2 py-1 hover:border-slate-800 focus:border-indigo-500/50 focus:bg-slate-900/50 focus:outline-none transition-all truncate"
+              className="w-full bg-transparent text-xs sm:text-sm font-medium text-zinc-200 hover:text-white px-1.5 py-0.5 rounded border border-transparent hover:border-white/[0.08] focus:border-white/[0.16] focus:bg-white/[0.03] focus:outline-none transition-colors truncate"
             />
-            <Edit3 className="w-3 h-3 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 pointer-events-none" />
           </div>
 
-          {/* Connection Status Pill */}
-          <div
-            className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border ${
-              connectionStatus === 'connected'
-                ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/40'
-                : connectionStatus === 'connecting'
-                ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
-                : 'bg-rose-950/40 text-rose-300 border-rose-800/40'
-            }`}
+          {/* Connection Status Button (Opens Inspector) */}
+          <button
+            type="button"
+            onClick={onOpenInspector}
+            className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04] transition-colors"
+            title="Click to view real-time sync telemetry and inspector"
           >
-            {connectionStatus === 'connected' ? (
-              <>
-                <Wifi className="w-3 h-3 text-emerald-400 animate-pulse" />
-                <span>Connected</span>
-              </>
-            ) : connectionStatus === 'connecting' ? (
-              <>
-                <div className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                <span>Syncing...</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-3 h-3 text-rose-400" />
-                <span>Offline (IndexedDB)</span>
-              </>
-            )}
-          </div>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                connectionStatus === 'connected'
+                  ? 'bg-emerald-400'
+                  : connectionStatus === 'connecting'
+                  ? 'bg-amber-400 animate-pulse'
+                  : 'bg-rose-400'
+              }`}
+            />
+            <span>
+              {connectionStatus === 'connected'
+                ? 'Synced'
+                : connectionStatus === 'connecting'
+                ? 'Syncing...'
+                : 'Offline'}
+            </span>
+          </button>
         </div>
 
-        {/* Right: Collaborators & Action Buttons */}
-        <div className="flex items-center gap-2.5">
+        {/* Right: Presence Avatars & Document Actions */}
+        <div className="flex items-center gap-2 shrink-0">
           {/* Active Collaborators Bar */}
           <ActiveUsersBar
             collaborators={collaborators}
@@ -144,31 +137,41 @@ export const Navbar: React.FC<NavbarProps> = ({
             onOpenProfile={onOpenProfile}
           />
 
-          <div className="h-5 w-px bg-slate-800 hidden sm:block" />
+          <div className="h-4 w-px bg-white/[0.08] mx-1" />
 
-          {/* Split-View Simulator Toggle */}
+          {/* Collaborator View (Split View) */}
           <button
             type="button"
             onClick={onToggleSplitView}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors border ${
               isSplitView
-                ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
-                : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+                ? 'bg-white/10 text-white border-white/20'
+                : 'text-zinc-300 border-white/[0.08] hover:bg-white/[0.06] hover:text-white'
             }`}
-            title="Split screen into two simultaneous collaborative peers"
+            title="Toggle side-by-side simulated peer editor"
           >
-            <Columns className="w-3.5 h-3.5" />
+            <Columns2 className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">
-              {isSplitView ? 'Close Split' : 'Split-View Demo'}
+              {isSplitView ? 'Close Split' : 'Dual View'}
             </span>
+          </button>
+
+          {/* Telemetry Inspector Button */}
+          <button
+            type="button"
+            onClick={onOpenInspector}
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] border border-transparent hover:border-white/[0.08] transition-colors"
+            title="Open Sync Telemetry Inspector"
+          >
+            <Activity className="w-4 h-4" />
           </button>
 
           {/* Share Button */}
           <button
             type="button"
             onClick={onOpenShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white transition-all"
-            title="Share room link"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-zinc-300 border border-white/[0.08] hover:bg-white/[0.06] hover:text-white transition-colors"
+            title="Share Document"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Share</span>
@@ -178,21 +181,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={onOpenExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white transition-all"
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] border border-transparent hover:border-white/[0.08] transition-colors"
             title="Export Document"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Export</span>
+            <Download className="w-4 h-4" />
           </button>
 
           {/* New Document Button */}
           <button
             type="button"
             onClick={onNewDocument}
-            className="p-1.5 rounded-xl bg-slate-900 text-slate-400 border border-slate-800 hover:text-white hover:bg-slate-800 transition-colors"
-            title="Create New Document Room"
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] border border-transparent hover:border-white/[0.08] transition-colors"
+            title="Create New Document"
           >
-            <FolderPlus className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
           </button>
         </div>
       </div>
