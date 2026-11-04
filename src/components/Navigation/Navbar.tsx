@@ -80,8 +80,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Left: Minimalist Brand & Document Title */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center gap-2 shrink-0">
-            {/* Geometric Minimal Monogram */}
-            <div className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+            {/* Minimal Brand Monogram */}
+            <div className="w-6 h-6 rounded bg-[#4aed88] flex items-center justify-center text-[#111827] text-xs font-bold shadow-sm">
               S
             </div>
             <span className="text-xs font-semibold text-zinc-100 tracking-tight hidden sm:inline">
