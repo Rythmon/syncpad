@@ -196,8 +196,25 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
       // Connect Yjs CRDT Text binding
       const ytext = ydoc.getText('codemirror');
-      if (ytext.length === 0) {
-        ytext.insert(0, LANGUAGE_STARTERS[language] || LANGUAGE_STARTERS.javascript);
+      const starter = LANGUAGE_STARTERS[language] || LANGUAGE_STARTERS.javascript;
+
+      // Seed starter template only if the room is brand new (empty after sync)
+      const seedIfEmpty = () => {
+        if (ytext.length === 0) {
+          ytext.insert(0, starter);
+        }
+      };
+
+      if (!provider || provider.synced) {
+        // Already synced (or no provider) — seed immediately
+        seedIfEmpty();
+      } else {
+        // Wait for the first sync event before deciding to seed
+        const onSync = (isSynced: boolean) => {
+          if (isSynced) seedIfEmpty();
+          provider.off('sync', onSync);
+        };
+        provider.on('sync', onSync);
       }
 
       // Bind CodeMirror with Yjs and Awareness (Remote Cursors)

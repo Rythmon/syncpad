@@ -77,6 +77,7 @@ export function useCollaboration(roomId: string) {
     return { name: 'Collaborator', color: '#6366f1' };
   });
 
+  const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const providerRef = useRef<WebsocketProvider | null>(null);
   const indexeddbProviderRef = useRef<IndexeddbPersistence | null>(null);
 
@@ -104,30 +105,33 @@ export function useCollaboration(roomId: string) {
 
     const myUserId = getOrCreateUserId();
 
-    // Determine WebSocket URL
+    // Determine WebSocket URL:
+    // If NEXT_PUBLIC_WS_URL is provided, use it.
+    // In local/LAN development (http:), connect to local WebSocket gateway on port 1234 of the current host (works for localhost AND phone on 192.168.x.x!)
+    // In production (https:), fallback to public cluster
     const envWs = process.env.NEXT_PUBLIC_WS_URL;
     let wsUrl = envWs;
-    if (!wsUrl) {
-      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        wsUrl = 'ws://localhost:1234';
+    if (!wsUrl && typeof window !== 'undefined') {
+      if (window.location.protocol === 'http:') {
+        wsUrl = `ws://${window.location.hostname}:1234`;
       } else {
-        // Free, zero-setup public WebSocket cluster provided by Yjs community
         wsUrl = 'wss://demos.yjs.dev';
       }
     }
 
-    // Isolate rooms on public clusters to avoid cross-project contamination
-    const effectiveRoomId = wsUrl.includes('demos.yjs.dev')
+    // Standardize room identification across local & public servers
+    const effectiveRoomId = wsUrl?.includes('demos.yjs.dev')
       ? `syncpad-v1-${roomId}`
       : roomId;
 
-    const provider = new WebsocketProvider(wsUrl, effectiveRoomId, ydoc, {
+    const wsProvider = new WebsocketProvider(wsUrl || 'ws://localhost:1234', effectiveRoomId, ydoc, {
       connect: !isSimulatedOffline,
     });
-    providerRef.current = provider;
+    providerRef.current = wsProvider;
+    setProvider(wsProvider);
 
     // Set initial user presence in Awareness protocol with stable userId
-    provider.awareness.setLocalStateField('user', {
+    wsProvider.awareness.setLocalStateField('user', {
       userId: myUserId,
       name: currentUser.name,
       color: currentUser.color,
@@ -141,11 +145,11 @@ export function useCollaboration(roomId: string) {
       setConnectionStatus(status);
     };
 
-    provider.on('status', onStatus);
+    wsProvider.on('status', onStatus);
 
     // Listen for awareness changes (Live Cursors & Presence) with strict ghost deduplication
     const onAwarenessChange = () => {
-      const states = provider.awareness.getStates();
+      const states = wsProvider.awareness.getStates();
       const peerMap = new Map<string, Collaborator>();
 
       states.forEach((state: any, clientId: number) => {
@@ -155,7 +159,7 @@ export function useCollaboration(roomId: string) {
         const peerUserId = peerUser.userId || `${peerUser.name}_${peerUser.color}`;
 
         // 1. Never show yourself as a remote collaborator (even if old tab/session hasn't timed out)
-        if (clientId === provider.awareness.clientID) return;
+        if (clientId === wsProvider.awareness.clientID) return;
         if (peerUser.userId && peerUser.userId === myUserId) return;
         if (peerUser.name === currentUser.name && (!peerUser.userId || peerUser.userId === myUserId)) return;
 
@@ -181,7 +185,7 @@ export function useCollaboration(roomId: string) {
       setCollaborators(Array.from(peerMap.values()));
     };
 
-    provider.awareness.on('change', onAwarenessChange);
+    wsProvider.awareness.on('change', onAwarenessChange);
 
     // Document update listener for stats
     const onDocUpdate = () => {
@@ -199,7 +203,7 @@ export function useCollaboration(roomId: string) {
     const handleUnload = () => {
       try {
         // Broadcast removal so peers immediately drop this user card without 30s timeout
-        provider.awareness.setLocalState(null);
+        wsProvider.awareness.setLocalState(null);
       } catch {}
     };
     window.addEventListener('beforeunload', handleUnload);
@@ -207,7 +211,7 @@ export function useCollaboration(roomId: string) {
 
     // Network latency ping measurement
     const pingInterval = setInterval(() => {
-      if (provider.wsconnected) {
+      if (wsProvider.wsconnected) {
         const simulatedPing = Math.floor(8 + Math.random() * 12);
         setLatencyMs(simulatedPing);
       }
@@ -218,10 +222,11 @@ export function useCollaboration(roomId: string) {
       window.removeEventListener('beforeunload', handleUnload);
       window.removeEventListener('pagehide', handleUnload);
       ydoc.off('update', onDocUpdate);
-      provider.awareness.off('change', onAwarenessChange);
-      provider.off('status', onStatus);
+      wsProvider.awareness.off('change', onAwarenessChange);
+      wsProvider.off('status', onStatus);
       handleUnload();
-      provider.destroy();
+      wsProvider.destroy();
+      setProvider(null);
     };
   }, [roomId, ydoc, isSimulatedOffline]);
 
@@ -285,7 +290,7 @@ export function useCollaboration(roomId: string) {
 
   return {
     ydoc,
-    provider: providerRef.current,
+    provider,
     connectionStatus,
     isIndexedDbSynced,
     isSimulatedOffline,

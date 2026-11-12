@@ -75,6 +75,7 @@ export class SyncPadWebSocketServer {
 
       this.wss.handleUpgrade(request, socket, head, (ws) => {
         const clientId = `peer_${Math.random().toString(36).substring(2, 9)}_${Date.now().toString(36)}`;
+        (ws as any).isAlive = true;
         const client: ClientConnection = {
           id: clientId,
           ws,
@@ -89,11 +90,13 @@ export class SyncPadWebSocketServer {
         this.roomManager.handleConnection(client);
 
         ws.on('message', (message: ArrayBuffer) => {
+          (ws as any).isAlive = true;
           client.isAlive = true;
           this.roomManager.handleMessage(client, new Uint8Array(message));
         });
 
         ws.on('pong', () => {
+          (ws as any).isAlive = true;
           client.isAlive = true;
         });
 

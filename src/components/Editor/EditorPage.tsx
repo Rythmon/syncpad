@@ -69,8 +69,12 @@ export const EditorPage: React.FC<EditorPageProps> = ({ roomId }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hasJoined = localStorage.getItem('syncpad_has_joined');
-      const savedUser = localStorage.getItem('syncpad_username');
-      if (!hasJoined && !savedUser) {
+      // Show join prompt whenever they haven't come through the lobby
+      // (even if they have a saved name from a previous session)
+      if (!hasJoined) {
+        // Pre-fill with their existing name so they can confirm or change it
+        const savedName = localStorage.getItem('syncpad_username');
+        if (savedName) setJoinNameInput(savedName);
         setIsJoinModalOpen(true);
       }
     }
