@@ -13,33 +13,126 @@ interface CodeEditorProps {
   onCodeChange?: (code: string) => void;
 }
 
-const DEFAULT_CODE = `// SyncPad — Real-Time Collaborative Code Editor
-// Powered by Yjs CRDTs, WebSockets, Redis Pub/Sub, and IndexedDB
-
-function calculateReplicasConvergence(nodes) {
-  console.log("Reconciling state vectors across cluster...");
-  const timestamp = Date.now();
+export const LANGUAGE_STARTERS: Record<string, string> = {
+  javascript: `// JavaScript (Node.js runtime)
+function solve() {
+  console.log("=== SyncPad JavaScript Engine ===");
+  const numbers = [12, 45, 68, 23, 91, 34];
+  const max = Math.max(...numbers);
+  const sum = numbers.reduce((a, b) => a + b, 0);
   
-  return nodes.map((node) => {
-    return {
-      nodeId: node.id,
-      stateVectorClock: node.clock + 1,
-      commutative: true,
-      convergedAt: timestamp,
-    };
-  });
+  console.log("Input numbers:", numbers);
+  console.log("Max value:", max);
+  console.log("Sum:", sum);
+  console.log("Average:", (sum / numbers.length).toFixed(2));
 }
 
-// Active multi-peer cluster simulation
-const clusterNodes = [
-  { id: "worker-us-east-1", clock: 42 },
-  { id: "worker-eu-central-1", clock: 88 },
-  { id: "worker-ap-south-1", clock: 19 }
-];
+solve();
+`,
+  python: `# Python 3 runtime
+import sys
 
-const result = calculateReplicasConvergence(clusterNodes);
-console.log("Convergence status:", JSON.stringify(result, null, 2));
-`;
+def sieve_primes(limit):
+    is_prime = [True] * (limit + 1)
+    is_prime[0] = is_prime[1] = False
+    for i in range(2, int(limit**0.5) + 1):
+        if is_prime[i]:
+            for j in range(i*i, limit + 1, i):
+                is_prime[j] = False
+    return [i for i, prime in enumerate(is_prime) if prime]
+
+print(f"=== SyncPad Python Runtime (Python {sys.version.split()[0]}) ===")
+primes = sieve_primes(50)
+print(f"Prime numbers up to 50: {primes}")
+print(f"Total count: {len(primes)}")
+`,
+  cpp: `// C++17 Runtime
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+
+int main() {
+    std::cout << "=== SyncPad C++17 Runtime ===" << std::endl;
+    std::vector<int> data = {7, 2, 9, 1, 5, 4, 8};
+    
+    std::cout << "Original: ";
+    for (int n : data) std::cout << n << " ";
+    std::cout << std::endl;
+
+    std::sort(data.begin(), data.end());
+    std::cout << "Sorted:   ";
+    for (int n : data) std::cout << n << " ";
+    std::cout << std::endl;
+
+    int total = std::accumulate(data.begin(), data.end(), 0);
+    std::cout << "Sum:      " << total << std::endl;
+    return 0;
+}
+`,
+  html: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      font-family: -apple-system, system-ui, sans-serif;
+      padding: 30px;
+      margin: 0;
+    }
+    .card {
+      background: #313244;
+      border: 1px solid #45475a;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 480px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    h2 { color: #a6e3a1; margin-top: 0; }
+    p { color: #bac2de; line-height: 1.5; }
+    button {
+      background: #a6e3a1;
+      color: #11111b;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background: #94e2d5; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Interactive HTML Preview</h2>
+    <p>This markup is rendered live in a sandboxed iframe inside SyncPad.</p>
+    <button onclick="alert('Hello from SyncPad Live HTML!')">Click Me</button>
+  </div>
+</body>
+</html>
+`,
+  markdown: `# SyncPad Collaborative Documentation
+
+Welcome to **SyncPad** — real-time collaborative code and markdown editor.
+
+## Features
+- **Conflict-Free Convergence:** Powered by Yjs CRDTs over WebSockets
+- **Multi-Language Runtimes:**
+  1. *JavaScript (Node.js)*
+  2. *Python 3*
+  3. *C++17*
+  4. *Live HTML / XML*
+  5. *Markdown Preview*
+
+\`\`\`javascript
+const sync = "Yjs CRDT";
+console.log(\`Engine: \${sync}\`);
+\`\`\`
+
+> Click **Run** in the toolbar to see this document rendered live!
+`,
+};
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   ydoc,
@@ -60,7 +153,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     async function initCodeMirror() {
       if (!textareaRef.current) return;
 
-      // Dynamically load CodeMirror 5 modules in browser
       const CodeMirror = (await import('codemirror')).default;
       await import('codemirror/mode/javascript/javascript');
       await import('codemirror/mode/python/python');
@@ -73,7 +165,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
       if (isCancelled || !textareaRef.current) return;
 
-      // Clean up previous instance if any
       if (editorInstanceRef.current) {
         editorInstanceRef.current.toTextArea();
         editorInstanceRef.current = null;
@@ -106,7 +197,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       // Connect Yjs CRDT Text binding
       const ytext = ydoc.getText('codemirror');
       if (ytext.length === 0) {
-        ytext.insert(0, DEFAULT_CODE);
+        ytext.insert(0, LANGUAGE_STARTERS[language] || LANGUAGE_STARTERS.javascript);
       }
 
       // Bind CodeMirror with Yjs and Awareness (Remote Cursors)

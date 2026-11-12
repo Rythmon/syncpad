@@ -1,0 +1,26 @@
+services:
+  # 1. Real-Time WebSocket Gateway
+  - type: web
+    name: syncpad-ws
+    runtime: node
+    plan: free
+    buildCommand: npm install -g pnpm && pnpm install
+    startCommand: npx tsx server/index.ts
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+
+  # 2. Next.js Web Frontend & Multi-Language Execution
+  - type: web
+    name: syncpad-web
+    runtime: node
+    plan: free
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build:next
+    startCommand: pnpm exec next start -p 10000
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_WS_URL
+        sync: false

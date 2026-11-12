@@ -27,6 +27,15 @@
   - Allows full document creation and editing during network drops or in airplane mode.
   - Automatically merges offline mutations conflict-free via 3-way CRDT state vector exchange upon reconnection.
 
+- **Multi-Language Execution & Live Preview Engine (`/api/execute`):**
+  - Instant code execution with safety timeout (5000ms):
+    - **JavaScript (Node.js)**: Runs in isolated subprocess with captured stdout/stderr.
+    - **Python 3**: Runs via `python3` with runtime version tracking.
+    - **C++17**: Automated compilation with `g++`/`clang++` (`-O2 -std=c++17`) and binary execution.
+    - **HTML / CSS**: Interactive sandboxed iframe preview with JS support.
+    - **Markdown**: Formatted live HTML preview rendering.
+  - Client-side fallback evaluator for JS when network connectivity is lost.
+
 - **Client-Side Scalability & Text Block Virtualization:**
   - Eliminates DOM recalculation lag during heavy concurrent typing bursts by leveraging CSS `content-visibility: auto` and `contain-intrinsic-size` on large paragraphs and text blocks.
   - Skips offscreen layout passes while maintaining instant searchability and document continuity.
@@ -134,7 +143,42 @@ docker-compose up --build
 
 ---
 
-## How Concurrent Conflict Resolution Works
+## Deployment Guide
+
+### Option A: All-in-One Docker Compose (Recommended for Self-Hosting)
+Runs Redis, the WebSocket gateway, and the Next.js web application with pre-configured compilers (Node, Python 3, g++):
+
+```bash
+docker-compose up --build -d
+```
+
+- Web UI: `http://localhost:3000`
+- WebSocket Server: `ws://localhost:1234`
+- Health check: `http://localhost:1234/health`
+- Redis: `localhost:6379`
+
+### Option B: Cloud Split Deployment (Vercel + Railway / Render + Upstash)
+
+Because Next.js on Vercel runs in serverless functions (which cannot maintain long-lived stateful WebSocket connections for CRDT streams), production architectures split the frontend and the real-time WebSocket gateway:
+
+1. **Redis Cluster (Upstash or Managed Redis):**
+   - Create a free database on [Upstash Redis](https://upstash.com/).
+   - Copy the `rediss://...` connection string.
+
+2. **WebSocket Gateway (Railway, Render, Fly.io, or DigitalOcean App Platform):**
+   - Deploy from the repository using `Dockerfile.server`.
+   - Set environment variables:
+     - `PORT=1234`
+     - `REDIS_URL=rediss://default:xxxx@your-upstash-instance:6379`
+   - Your WebSocket endpoint will be `wss://your-syncpad-ws.railway.app`.
+
+3. **Frontend Web App (Vercel):**
+   - Import the repository in [Vercel](https://vercel.com/).
+   - Configure Environment Variables:
+     - `NEXT_PUBLIC_WS_URL=wss://your-syncpad-ws.railway.app`
+   - Deploy.
+
+---
 
 SyncPad relies on **Yjs Conflict-Free Replicated Data Types (CRDTs)**:
 1. Every character and text block is identified by an immutable `(client, clock)` unique tuple.
