@@ -88,9 +88,14 @@ export function useCollaboration(roomId: string) {
 
     // Determine WebSocket URL
     const envWs = process.env.NEXT_PUBLIC_WS_URL;
-    let wsUrl = envWs || `ws://${window.location.hostname}:1234`;
-    if (window.location.protocol === 'https:' && !envWs) {
-      wsUrl = `wss://${window.location.hostname}:1234`;
+    let wsUrl = envWs;
+    if (!wsUrl) {
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        wsUrl = 'ws://localhost:1234';
+      } else {
+        // Free, zero-setup public WebSocket cluster provided by Yjs community
+        wsUrl = 'wss://demos.yjs.dev';
+      }
     }
 
     const provider = new WebsocketProvider(wsUrl, roomId, ydoc, {
