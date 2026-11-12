@@ -7,6 +7,7 @@ interface ClientCardProps {
   color?: string;
   isCurrentUser?: boolean;
   isTyping?: boolean;
+  onClick?: () => void;
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({
@@ -14,6 +15,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   color = '#4aed88',
   isCurrentUser = false,
   isTyping = false,
+  onClick,
 }) => {
   const getInitials = (name: string) => {
     return name
@@ -26,12 +28,17 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center group relative cursor-default select-none">
+    <div
+      onClick={onClick}
+      className={`flex flex-col items-center group relative select-none ${
+        isCurrentUser ? 'cursor-pointer' : 'cursor-default'
+      }`}
+      title={isCurrentUser ? `${username} (Click to edit your name/color)` : username}
+    >
       {/* Avatar Box (50x50 with 14px rounded corners matching realtime-code-editor) */}
       <div
         className="w-[50px] h-[50px] rounded-[14px] flex items-center justify-center text-white font-bold text-sm shadow-md transition-transform group-hover:scale-105 relative"
         style={{ backgroundColor: color }}
-        title={`${username} ${isCurrentUser ? '(You)' : ''}`}
       >
         <span>{getInitials(username)}</span>
 
@@ -46,7 +53,11 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       {/* Username label */}
       <span className="mt-2 text-xs font-semibold text-zinc-200 max-w-[80px] truncate text-center">
         {username}
-        {isCurrentUser && <span className="text-[10px] text-zinc-500 block -mt-0.5">(You)</span>}
+        {isCurrentUser && (
+          <span className="text-[10px] text-zinc-400 block -mt-0.5 group-hover:text-[#4aed88] transition-colors">
+            (You)
+          </span>
+        )}
       </span>
     </div>
   );

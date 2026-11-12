@@ -31,28 +31,28 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md bg-[#111318] border border-white/[0.08] rounded-xl shadow-2xl p-6 text-zinc-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="relative w-full max-w-md bg-[#282a36] border border-[#343746] rounded-xl shadow-2xl p-6 text-white overflow-hidden">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
+          className="absolute top-4 right-4 p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-3 mb-5">
+        <div className="flex items-center gap-3 mb-5 border-b border-[#343746] pb-3">
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow"
+            className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow"
             style={{ backgroundColor: color }}
           >
             {name ? name[0].toUpperCase() : 'U'}
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100">Collaborator Identity</h2>
+            <h2 className="text-sm font-bold text-white">Collaborator Identity</h2>
             <p className="text-[11px] text-zinc-400">
-              Customize how your cursor and selection tags appear to peers
+              Customize how your cursor, selection, and avatar appear to others
             </p>
           </div>
         </div>
@@ -60,7 +60,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Name input */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-300 mb-1.5">
+            <label className="block text-[11px] font-semibold text-zinc-300 mb-1.5">
               Display Name
             </label>
             <input
@@ -69,14 +69,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               onChange={(e) => setName(e.target.value)}
               maxLength={32}
               required
-              className="w-full px-3 py-2 bg-[#0c0d11] border border-white/[0.08] rounded-md text-xs text-zinc-100 focus:outline-none focus:border-white/20 transition-colors"
-              placeholder="e.g. Elena Rostova"
+              className="w-full px-3 py-2 bg-[#1c1e29] border border-[#343746] rounded-md text-sm text-white focus:outline-none focus:border-[#4aed88] transition-colors"
+              placeholder="e.g. Alex"
+              autoFocus
             />
           </div>
 
           {/* Color Selection */}
           <div>
-            <label className="block text-[11px] font-medium text-zinc-300 mb-2">
+            <label className="block text-[11px] font-semibold text-zinc-300 mb-2">
               Cursor Color
             </label>
             <div className="flex flex-wrap gap-2">
@@ -86,7 +87,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   type="button"
                   onClick={() => setColor(c)}
                   className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${
-                    color === c ? 'ring-2 ring-white ring-offset-2 ring-offset-[#111318]' : ''
+                    color === c ? 'ring-2 ring-white ring-offset-2 ring-offset-[#282a36]' : ''
                   }`}
                   style={{ backgroundColor: c }}
                 >
@@ -96,39 +97,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
           </div>
 
-          {/* Live Preview */}
-          <div className="p-3 rounded-lg bg-[#0c0d11] border border-white/[0.06] text-zinc-400">
-            <span className="block text-[10px] text-zinc-500 mb-2 font-mono uppercase tracking-wider">
-              Render Preview
-            </span>
-            <div className="relative pl-4 py-1 flex items-center">
-              <div
-                className="w-0.5 h-5 rounded-full"
-                style={{ backgroundColor: color }}
-              />
-              <span
-                className="ml-1 text-[10.5px] font-medium text-white px-1.5 py-0.5 rounded shadow"
-                style={{ backgroundColor: color }}
-              >
-                {name || 'Your Name'}
-              </span>
-            </div>
-          </div>
-
           {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.06]">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#343746]">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 rounded-md text-xs text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] transition-colors"
+              className="px-3 py-2 rounded text-xs text-zinc-400 hover:text-white transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-md text-xs font-medium bg-white text-zinc-950 hover:bg-zinc-200 transition-colors shadow-sm"
+              className="px-4 py-2 rounded text-xs font-bold bg-[#4aed88] text-[#111827] hover:bg-[#3ec470] transition-colors shadow"
             >
-              Save Changes
+              Save Identity
             </button>
           </div>
         </form>

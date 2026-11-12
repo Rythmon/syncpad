@@ -59,19 +59,23 @@ export function useCollaboration(roomId: string) {
   const [updateCount, setUpdateCount] = useState<number>(0);
   const [latencyMs, setLatencyMs] = useState<number>(12);
 
-  // User profile with deterministic SSR-safe default
-  const [currentUser, setCurrentUser] = useState<{ name: string; color: string }>({
-    name: 'Collaborator',
-    color: '#6366f1',
+  // User profile: initialized directly from localStorage if in browser, and immediately saved so it NEVER changes on refresh
+  const [currentUser, setCurrentUser] = useState<{ name: string; color: string }>(() => {
+    if (typeof window !== 'undefined') {
+      let savedName = localStorage.getItem('syncpad_username');
+      if (!savedName) {
+        savedName = getRandomName();
+        localStorage.setItem('syncpad_username', savedName);
+      }
+      let savedColor = localStorage.getItem('syncpad_usercolor');
+      if (!savedColor) {
+        savedColor = getRandomColor();
+        localStorage.setItem('syncpad_usercolor', savedColor);
+      }
+      return { name: savedName, color: savedColor };
+    }
+    return { name: 'Collaborator', color: '#6366f1' };
   });
-
-  // Client-side initialization of profile from localStorage
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const savedName = localStorage.getItem('syncpad_username') || getRandomName();
-    const savedColor = localStorage.getItem('syncpad_usercolor') || getRandomColor();
-    setCurrentUser({ name: savedName, color: savedColor });
-  }, []);
 
   const providerRef = useRef<WebsocketProvider | null>(null);
   const indexeddbProviderRef = useRef<IndexeddbPersistence | null>(null);
@@ -219,7 +223,22 @@ export function useCollaboration(roomId: string) {
       handleUnload();
       provider.destroy();
     };
-  }, [roomId, ydoc, currentUser.name, currentUser.color]);
+  }, [roomId, ydoc, isSimulatedOffline]);
+
+  // Sync profile changes into awareness without reconnecting the entire socket
+  useEffect(() => {
+    if (providerRef.current) {
+      providerRef.current.awareness.setLocalStateField('user', {
+        userId: getOrCreateUserId(),
+        name: currentUser.name,
+        color: currentUser.color,
+        cursor: null,
+        selection: null,
+        isTyping: false,
+        updatedAt: Date.now(),
+      });
+    }
+  }, [currentUser.name, currentUser.color]);
 
   // Handle simulated offline toggle
   const toggleOfflineSimulation = useCallback(() => {

@@ -49,6 +49,7 @@ export const HomeView: React.FC = () => {
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('syncpad_username', username.trim());
+      localStorage.setItem('syncpad_has_joined', 'true');
     }
 
     // Navigate to editor room

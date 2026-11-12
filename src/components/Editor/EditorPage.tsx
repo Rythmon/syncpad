@@ -8,6 +8,7 @@ import { ClientCard } from '@/components/Client/ClientCard';
 import { CodeEditor, LANGUAGE_STARTERS } from '@/components/Editor/CodeEditor';
 import { SyncTelemetryInspector } from '@/components/Presence/LivePresenceHUD';
 import { OfflineBanner } from '@/components/Offline/OfflineBanner';
+import { ProfileModal } from '@/components/Modals/ProfileModal';
 import {
   Copy,
   Share2,
@@ -47,6 +48,11 @@ export const EditorPage: React.FC<EditorPageProps> = ({ roomId }) => {
   const [previewHtml, setPreviewHtml] = useState('');
   const currentCodeRef = useRef('');
 
+  // Profile & Join Modals
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [joinNameInput, setJoinNameInput] = useState('');
+
   const {
     ydoc,
     provider,
@@ -55,8 +61,34 @@ export const EditorPage: React.FC<EditorPageProps> = ({ roomId }) => {
     toggleOfflineSimulation,
     collaborators,
     currentUser,
+    updateProfile,
     stats,
   } = useCollaboration(roomId);
+
+  // If the user joined via direct copied link without going through the lobby, prompt for their name
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasJoined = localStorage.getItem('syncpad_has_joined');
+      const savedUser = localStorage.getItem('syncpad_username');
+      if (!hasJoined && !savedUser) {
+        setIsJoinModalOpen(true);
+      }
+    }
+  }, []);
+
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalName = joinNameInput.trim() || currentUser.name;
+    updateProfile(finalName, currentUser.color);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('syncpad_username', finalName);
+      localStorage.setItem('syncpad_has_joined', 'true');
+    }
+    setIsJoinModalOpen(false);
+    toast.success(`Joined as ${finalName}`, {
+      style: { background: '#282a36', color: '#50fa7b' },
+    });
+  };
 
   // Track joins/leaves for toast notifications
   const previousPeersRef = useRef<string[]>([]);
@@ -240,6 +272,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({ roomId }) => {
               username={currentUser.name}
               color={currentUser.color}
               isCurrentUser={true}
+              onClick={() => setIsProfileModalOpen(true)}
             />
 
             {collaborators.map((peer) => (
@@ -576,6 +609,71 @@ export const EditorPage: React.FC<EditorPageProps> = ({ roomId }) => {
         connectionStatus={connectionStatus}
         onToggleOffline={toggleOfflineSimulation}
       />
+
+      {/* Profile Modal for Changing Name / Color */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        currentUser={currentUser}
+        onSave={(name, color) => updateProfile(name, color)}
+      />
+
+      {/* Direct Link Join Modal (Prompts for display name when opening a shared link directly) */}
+      {isJoinModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-sm bg-[#282a36] border border-[#343746] rounded-xl shadow-2xl p-6 text-white">
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#343746]">
+              <div className="w-9 h-9 rounded-md bg-[#4aed88] flex items-center justify-center text-[#111827] font-bold text-sm shrink-0">
+                SP
+              </div>
+              <div className="overflow-hidden">
+                <h3 className="text-sm font-bold text-white">Join SyncPad Room</h3>
+                <p className="text-[11px] text-zinc-400 font-mono truncate" title={roomId}>
+                  Room: {roomId}
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleJoinSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs text-zinc-300 font-semibold mb-1.5 block">
+                  Your Display Name
+                </label>
+                <input
+                  type="text"
+                  value={joinNameInput}
+                  onChange={(e) => setJoinNameInput(e.target.value)}
+                  placeholder={`e.g. ${currentUser.name}`}
+                  autoFocus
+                  maxLength={32}
+                  className="w-full bg-[#1c1e29] border border-[#343746] focus:border-[#4aed88] rounded px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-[#4aed88] hover:bg-[#3ec470] text-[#111827] font-bold text-xs rounded transition-colors shadow"
+                >
+                  Join Room
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('syncpad_has_joined', 'true');
+                    }
+                    setIsJoinModalOpen(false);
+                  }}
+                  className="w-full py-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+                >
+                  Continue as {currentUser.name}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
